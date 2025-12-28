@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>מה אומרים המספרים?</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            direction: rtl;
+            min-height: 100vh;
+            background: linear-gradient(to bottom, #cae2fe, #ecf0f5);
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        @media (min-width: 768px) {
+            .container {
+                padding: 4rem;
+            }
+        }
+
+        /* Header with Back Button and Stepper */
+        .header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 3rem;
+            position: relative;
+        }
+
+        .back-button {
+            position: absolute;
+            right: 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #003C7F;
+            font-size: 16px;
+        }
+
+        .back-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.2s;
+        }
+
+        .back-button:hover .back-icon {
+            background-color: rgba(0, 60, 127, 0.04);
+        }
+
+        /* Stepper */
+        .stepper {
+            display: flex;
+            align-items: center;
+            gap: 0;
+            max-width: 235px;
+            margin: 0 auto;
+        }
+
+        .step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+
+        .step-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .step-icon.completed {
+            background-color: #003C7F;
+            color: white;
+        }
+
+        .step-icon.active {
+            background-color: #f7b207;
+            border: 2px solid #003C7F;
+            color: #003C7F;
+        }
+
+        .step-icon.inactive {
+            background-color: #e0e0e0;
+            color: #757575;
+        }
+
+        .step-connector {
+            width: 45px;
+            height: 2px;
+            background-color: #003C7F;
+            align-self: center;
+        }
+
+        /* Typography */
+        h1 {
+            font-size: 32px;
+            font-weight: 700;
+            color: #003C7F;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        /* Cards */
+        .card {
+            background-color: #F5F5F5;
+            border-radius: 10px;
+            box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1), 0px 4px 8px rgba(0, 0, 0, 0.05);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            max-width: 458px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #003C7F;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .card-subtitle {
+            font-size: 14px;
+            color: #003C7F;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        /* Input Fields */
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Floating Label Input Container */
+        .floating-label-container {
+            position: relative;
+            width: 300px;
+        }
+
+        .number-input {
+            width: 100%;
+            height: 56px;
+            padding: 14px;
+            padding-top: 20px;
+            font-size: 16px;
+            color: #003C7F;
+            background-color: #fff;
+            border: 1px solid rgba(0, 0, 0, 0.23);
+            border-radius: 4px;
+            text-align: right;
+            direction: rtl;
+            transition: all 0.2s;
+        }
+
+        .number-input:focus {
+            outline: none;
+            background-color: #E3F2FD;
+            border-color: #003C7F;
+            border-width: 2px;
+        }
+
+        .floating-label {
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 16px;
+            color: rgba(0, 60, 127, 0.6);
+            pointer-events: none;
+            transition: all 0.2s;
+            background-color: transparent;
+            padding: 0 4px;
+        }
+
+        .number-input:focus + .floating-label,
+        .number-input:not(:placeholder-shown) + .floating-label,
+        .number-input.has-value + .floating-label {
+            top: -8px;
+            transform: translateY(0);
+            font-size: 12px;
+            color: #003C7F;
+            background-color: #fff;
+        }
+
+        .number-input:focus + .floating-label {
+            color: #003C7F;
+        }
+
+        .input-helper-text {
+            font-size: 14px;
+            color: #666;
+            text-align: center;
+        }
+
+        /* Percentage Input with Round Buttons */
+        .percentage-group {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        .round-button {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #2d76cb;
+            color: white;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.2s;
+            box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .round-button:hover {
+            background-color: #235a9f;
+        }
+
+        .round-button:active {
+            transform: scale(0.95);
+        }
+
+        .percentage-input {
+            width: 100px;
+            height: 56px;
+            padding: 14px;
+            font-size: 16px;
+            color: #003C7F;
+            background-color: #fff;
+            border: 1px solid rgba(0, 0, 0, 0.23);
+            border-radius: 4px;
+            text-align: center;
+            direction: ltr;
+            transition: all 0.2s;
+        }
+
+        .percentage-input:focus {
+            outline: none;
+            background-color: #E3F2FD;
+            border-color: #003C7F;
+            border-width: 2px;
+        }
+
+        /* Checkbox */
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+
+        .checkbox-input {
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            accent-color: #003C7F;
+        }
+
+        .checkbox-label {
+            font-size: 16px;
+            color: #003C7F;
+            cursor: pointer;
+        }
+
+        /* Slider */
+        .slider-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            width: 100%;
+        }
+
+        @media (max-width: 480px) {
+            .slider-container {
+                gap: 0.25rem;
+            }
+        }
+
+        .slider-label-only {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 80px;
+            flex-shrink: 0;
+        }
+
+        @media (max-width: 480px) {
+            .slider-label-only {
+                min-width: 60px;
+            }
+        }
+
+        .slider-label {
+            font-size: 14px;
+            color: #003C7F;
+            text-align: center;
+            line-height: 1.2;
+        }
+
+        @media (max-width: 480px) {
+            .slider-label {
+                font-size: 12px;
+            }
+        }
+
+        /* Slider Input Fields */
+        .slider-inputs {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+            width: 100%;
+            align-items: center;
+        }
+
+        .slider-input-wrapper {
+            position: relative;
+            width: 300px;
+        }
+
+        .slider-amount-input {
+            width: 100%;
+            height: 56px;
+            padding: 14px;
+            padding-top: 20px;
+            font-size: 16px;
+            color: #003C7F;
+            background-color: #fff;
+            border: 1px solid rgba(0, 0, 0, 0.23);
+            border-radius: 4px;
+            text-align: right;
+            direction: rtl;
+            transition: all 0.2s;
+        }
+
+        .slider-amount-input:focus {
+            outline: none;
+            background-color: #E3F2FD;
+            border-color: #003C7F;
+            border-width: 2px;
+        }
+
+        .slider-input-label {
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 16px;
+            color: rgba(0, 60, 127, 0.6);
+            pointer-events: none;
+            transition: all 0.2s;
+            background-color: transparent;
+            padding: 0 4px;
+        }
+
+        .slider-amount-input:focus + .slider-input-label,
+        .slider-amount-input:not(:placeholder-shown) + .slider-input-label,
+        .slider-amount-input.has-value + .slider-input-label {
+            top: -8px;
+            transform: translateY(0);
+            font-size: 12px;
+            color: #003C7F;
+            background-color: #fff;
+        }
+
+        @media (max-width: 480px) {
+            .slider-amount-input {
+                font-size: 14px;
+            }
+        }
+
+        .slider {
+            flex: 1;
+            min-width: 80px;
+            max-width: 200px;
+            height: 6px;
+            border-radius: 3px;
+            background: linear-gradient(to left, #2d76cb, #E3F2FD);
+            outline: none;
+            -webkit-appearance: none;
+            appearance: none;
+            transition: opacity 0.2s;
+        }
+
+        @media (max-width: 480px) {
+            .slider {
+                min-width: 60px;
+                max-width: 120px;
+            }
+        }
+
+        .slider:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #003C7F;
+            cursor: pointer;
+            box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .slider:disabled::-webkit-slider-thumb {
+            cursor: not-allowed;
+            background: #999;
+        }
+
+        .slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #003C7F;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .slider:disabled::-moz-range-thumb {
+            cursor: not-allowed;
+            background: #999;
+        }
+
+        /* Submit Button */
+        .submit-button {
+            width: 100%;
+            max-width: 458px;
+            height: 46px;
+            background-color: #2d76cb;
+            color: white;
+            border: none;
+            border-radius: 24px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+            display: block;
+            margin: 2rem auto;
+        }
+
+        .submit-button:hover {
+            background-color: #235a9f;
+        }
+
+        /* Legal Link */
+        .legal-link {
+            text-align: center;
+            margin-top: 2rem;
+        }
+
+        .legal-link a {
+            color: #003C7F;
+            text-decoration: underline;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .legal-link a:hover {
+            text-decoration: none;
+        }
+
+        /* Icons (SVG) */
+        .icon-check {
+            width: 20px;
+            height: 20px;
+        }
+
+        .icon-arrow {
+            width: 24px;
+            height: 24px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header with Back Button and Stepper -->
+        <div class="header">
+            <button class="back-button" onclick="goBack()">
+                <div class="back-icon">
+                    <svg class="icon-arrow" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+                    </svg>
+                </div>
+                <span>חזרה</span>
+            </button>
+
+            <div class="stepper">
+                <div class="step">
+                    <div class="step-icon completed">
+                        <svg class="icon-check" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                        </svg>
+                    </div>
+                </div>
+                <div class="step-connector"></div>
+                <div class="step">
+                    <div class="step-icon completed">
+                        <svg class="icon-check" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                        </svg>
+                    </div>
+                </div>
+                <div class="step-connector"></div>
+                <div class="step">
+                    <div class="step-icon completed">
+                        <svg class="icon-check" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                        </svg>
+                    </div>
+                </div>
+                <div class="step-connector"></div>
+                <div class="step">
+                    <div class="step-icon active">
+                        <span>4</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Title -->
+        <h1>מה אומרים המספרים?</h1>
+
+        <!-- Card 1: Number Input -->
+        <div class="card">
+            <div class="card-title">מהי ההכנסה השנתית שלך כעצמאי/ת?</div>
+            <div class="input-group">
+                <div class="floating-label-container">
+                    <input
+                        type="number"
+                        class="number-input"
+                        id="numberInput1"
+                        placeholder=" "
+                        min="0"
+                        oninput="updateCalculations(); updateLabelState()"
+                    >
+                    <label class="floating-label">הכנסה שנתית</label>
+                </div>
+                <div class="input-helper-text">נדגיש שאנחנו נשתמש בנתונים האלה על מנת לחשב את הפנסיה מהקרן המקיפה וגם מהכללית</div>
+            </div>
+        </div>
+
+        <!-- Card 2: Percentage Input with +/- Buttons -->
+        <div class="card">
+            <div class="card-title">מתוך ההכנסה שלך, מהו האחוז שמופקד לקרן הפנסיה?</div>
+            <div class="card-subtitle">בחרנו את מה שמפקידים רוב העצמאיים</div>
+            <div class="percentage-group">
+                <button class="round-button" onclick="decreasePercentage()">−</button>
+                <input
+                    type="number"
+                    class="percentage-input"
+                    id="percentageInput"
+                    value="16"
+                    min="0"
+                    max="100"
+                    step="1"
+                    oninput="updateCalculations()"
+                >
+                <button class="round-button" onclick="increasePercentage()">+</button>
+            </div>
+
+            <div class="checkbox-group" style="margin-top: 1.5rem;">
+                <input
+                    type="checkbox"
+                    class="checkbox-input"
+                    id="checkbox1"
+                    checked
+                    onchange="handleCheckboxChange()"
+                >
+                <label for="checkbox1" class="checkbox-label">אני מפקיד/ה למקיפה עד התקרה ואת השאר לכללית</label>
+            </div>
+        </div>
+
+        <!-- Card 3: Slider and Input Fields -->
+        <div class="card" id="card3" style="display: none;">
+            <div class="card-title">איך מתחלקת ההפקדה בין הקרן המקיפה לכללית?</div>
+
+            <div class="slider-group">
+                <div class="slider-container">
+                    <div class="slider-label-only">
+                        <span class="slider-label">הפקדה לכללית</span>
+                    </div>
+                    <input
+                        type="range"
+                        class="slider"
+                        id="slider1"
+                        min="0"
+                        max="100"
+                        value="50"
+                        oninput="handleSliderChange()"
+                    >
+                    <div class="slider-label-only">
+                        <span class="slider-label">הפקדה למקיפה</span>
+                    </div>
+                </div>
+                <div class="slider-inputs">
+                    <div class="slider-input-wrapper">
+                        <input
+                            type="number"
+                            class="slider-amount-input"
+                            id="comprehensiveAmountInput"
+                            min="0"
+                            placeholder=" "
+                            oninput="handleComprehensiveAmountChange(); updateLabelState()"
+                        >
+                        <label class="slider-input-label">הפקדה למקיפה</label>
+                    </div>
+                    <div class="slider-input-wrapper">
+                        <input
+                            type="number"
+                            class="slider-amount-input"
+                            id="generalAmountInput"
+                            min="0"
+                            placeholder=" "
+                            oninput="handleGeneralAmountChange(); updateLabelState()"
+                        >
+                        <label class="slider-input-label">הפקדה לכללית</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Submit Button -->
+        <button class="submit-button" onclick="handleSubmit()">הלאה</button>
+
+        <!-- Legal Link -->
+        <div class="legal-link">
+            <a href="#" onclick="handleLegalClick(event)">אופן החישוב ודבר המחלקה המשפטית</a>
+        </div>
+    </div>
+
+    <script>
+        // Get maximum contribution amount
+        function getMaxContribution() {
+            const income = parseFloat(document.getElementById('numberInput1').value) || 0;
+            const percentage = parseFloat(document.getElementById('percentageInput').value) || 0;
+            return income * (percentage / 100);
+        }
+
+        // Update all calculations based on slider position
+        function updateCalculationsFromSlider() {
+            const sliderValue = parseFloat(document.getElementById('slider1').value) || 0;
+            const maxContribution = getMaxContribution();
+
+            // Calculate split based on slider (right side is comprehensive, left is general)
+            const comprehensivePercent = sliderValue;
+            const generalPercent = 100 - sliderValue;
+
+            const comprehensiveAmount = Math.round(maxContribution * (comprehensivePercent / 100));
+            const generalAmount = Math.round(maxContribution * (generalPercent / 100));
+
+            // Update input fields
+            document.getElementById('comprehensiveAmountInput').value = comprehensiveAmount;
+            document.getElementById('generalAmountInput').value = generalAmount;
+        }
+
+        // Update slider and other field when comprehensive amount changes
+        function handleComprehensiveAmountChange() {
+            const comprehensiveInput = document.getElementById('comprehensiveAmountInput');
+            const generalInput = document.getElementById('generalAmountInput');
+            const slider = document.getElementById('slider1');
+            const maxContribution = getMaxContribution();
+
+            let comprehensiveAmount = parseFloat(comprehensiveInput.value) || 0;
+
+            // Ensure amount doesn't exceed max
+            if (comprehensiveAmount > maxContribution) {
+                comprehensiveAmount = maxContribution;
+                comprehensiveInput.value = comprehensiveAmount;
+            }
+
+            // Calculate general amount
+            const generalAmount = maxContribution - comprehensiveAmount;
+            generalInput.value = Math.round(generalAmount);
+
+            // Update slider position
+            if (maxContribution > 0) {
+                const newSliderValue = (comprehensiveAmount / maxContribution) * 100;
+                slider.value = Math.round(newSliderValue);
+            }
+        }
+
+        // Update slider and other field when general amount changes
+        function handleGeneralAmountChange() {
+            const comprehensiveInput = document.getElementById('comprehensiveAmountInput');
+            const generalInput = document.getElementById('generalAmountInput');
+            const slider = document.getElementById('slider1');
+            const maxContribution = getMaxContribution();
+
+            let generalAmount = parseFloat(generalInput.value) || 0;
+
+            // Ensure amount doesn't exceed max
+            if (generalAmount > maxContribution) {
+                generalAmount = maxContribution;
+                generalInput.value = generalAmount;
+            }
+
+            // Calculate comprehensive amount
+            const comprehensiveAmount = maxContribution - generalAmount;
+            comprehensiveInput.value = Math.round(comprehensiveAmount);
+
+            // Update slider position
+            if (maxContribution > 0) {
+                const newSliderValue = (comprehensiveAmount / maxContribution) * 100;
+                slider.value = Math.round(newSliderValue);
+            }
+        }
+
+        // Update calculations when income or percentage changes
+        function updateCalculations() {
+            updateCalculationsFromSlider();
+        }
+
+        // Percentage Input Controls
+        function increasePercentage() {
+            const input = document.getElementById('percentageInput');
+            let value = parseInt(input.value) || 0;
+            if (value < 100) {
+                input.value = value + 1;
+                updateCalculations();
+            }
+        }
+
+        function decreasePercentage() {
+            const input = document.getElementById('percentageInput');
+            let value = parseInt(input.value) || 0;
+            if (value > 0) {
+                input.value = value - 1;
+                updateCalculations();
+            }
+        }
+
+        // Ensure percentage stays within bounds
+        document.getElementById('percentageInput').addEventListener('input', function() {
+            let value = parseInt(this.value);
+            if (value > 100) this.value = 100;
+            if (value < 0) this.value = 0;
+        });
+
+        // Update label states for all inputs
+        function updateLabelState() {
+            // Update all inputs to add/remove has-value class
+            const inputs = document.querySelectorAll('.number-input, .percentage-input, .slider-amount-input');
+            inputs.forEach(input => {
+                if (input.value && input.value.trim() !== '') {
+                    input.classList.add('has-value');
+                } else {
+                    input.classList.remove('has-value');
+                }
+            });
+        }
+
+        // Checkbox Change Handler
+        function handleCheckboxChange() {
+            const checkbox = document.getElementById('checkbox1');
+            const card3 = document.getElementById('card3');
+
+            // Hide entire card 3 when checkbox is checked, show when unchecked
+            if (checkbox.checked) {
+                card3.style.display = 'none';
+            } else {
+                card3.style.display = 'block';
+            }
+
+            console.log('Checkbox changed:', checkbox.checked);
+            console.log('Card 3 visible:', !checkbox.checked);
+        }
+
+        // Slider Change Handler
+        function handleSliderChange() {
+            updateCalculationsFromSlider();
+        }
+
+        // Back Button Handler
+        function goBack() {
+            console.log('Back button clicked');
+            // Currently does nothing as per requirements
+        }
+
+        // Legal Link Handler
+        function handleLegalClick(event) {
+            event.preventDefault();
+            console.log('Legal link clicked');
+            // Currently does nothing as per requirements
+        }
+
+        // Submit Button Handler
+        function handleSubmit() {
+            const numberInput = document.getElementById('numberInput1').value;
+            const percentageInput = document.getElementById('percentageInput').value;
+            const checkbox = document.getElementById('checkbox1').checked;
+            const comprehensiveAmount = document.getElementById('comprehensiveAmountInput').value;
+            const generalAmount = document.getElementById('generalAmountInput').value;
+
+            console.log('Form submitted with values:', {
+                income: numberInput,
+                depositPercentage: percentageInput + '%',
+                depositUpToCeiling: checkbox,
+                comprehensiveDeposit: comprehensiveAmount,
+                generalDeposit: generalAmount
+            });
+
+            // Add your form submission logic here
+        }
+
+        // Initialize calculations on page load
+        window.addEventListener('DOMContentLoaded', function() {
+            updateCalculations();
+            updateLabelState();
+        });
+    </script>
+</body>
+</html>
